@@ -9,12 +9,36 @@
  */
 
 var fs = require('fs');
+
+var promiseConstructor = require('./promiseConstructor');
+var getStatusCodeAsync = promiseConstructor.getStatusCodeAsync;
+var pluckFirstLineFromFileAsync = promiseConstructor.pluckFirstLineFromFileAsync;
+
+var promisification = require('./promisification');
+var getGitHubProfileAsync = promisification.getGitHubProfileAsync;
+var generateRandomTokenAsync = promisification.generateRandomTokenAsync;
+var readFileAndMakeItFunnyAsync = promisification.readFileAndMakeItFunnyAsync;
+
 var Promise = require('bluebird');
 
 
 
 var fetchProfileAndWriteToFile = function(readFilePath, writeFilePath) {
-  // TODO
+  return pluckFirstLineFromFileAsync(readFilePath)
+    .then(function(username) {
+      if (!username) {
+        throw new Error('User not found!'); // heads straight to 'catch'
+      } else {
+        return getGitHubProfileAsync(username);
+      }
+    })
+    .then(function(data) {
+      fs.appendFile(writeFilePath, JSON.stringify(data), function(err, response) {
+        if (err) {
+          throw new Error(err);
+        }
+      });
+    });
 };
 
 // Export these functions so we can test them
